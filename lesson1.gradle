@@ -1,0 +1,71 @@
+/**
+ * 主要演示ext属性、任务依赖、默认任务、任务的生命周期等
+ */
+
+defaultTasks 'test2', 'testN_1'    // 直接运行gradle命令，默认将执行test2和testN_1任务
+
+gradle.ext {
+    version = "123456"             // 定义外部定义的变量
+}
+
+def first = {
+    println "$name: doFirst"       // 类加载的时候就name已经绑定了
+}
+
+def last = {
+    println "$name: doLast"        // 在类加载的时候name就已经绑定了
+}
+
+println "$name: load"              // GradleSnippet: load，配置阶段打印
+
+task test(dependsOn: "test2") {    // 依赖于test2
+
+    if (gradle.ext.version == gradle.version) {    // true
+        println "gradle.ext.version == gradle.version"
+    }
+
+    println "$gradle.ext.version"  // 123456，使用外部定义的变量，配置阶段打印
+    println "$gradle.version"      // 123456，使用外部定义的变量，配置阶段打印
+    println "$name: load"          // test: load，配置阶段打印
+
+    doFirst {
+       first.call()                // GradleSnippet: doFirst，任务执行阶段打印
+    }
+    
+    doLast {
+        last.call()                // GradleSnippet: doLast，任务执行阶段打印
+    }
+}
+
+task test2(dependsOn: "testN_1") {
+
+    println "$name: load"          // test2: load，配置阶段打印
+
+    doFirst {
+       first.call()                // GradleSnippet: doFirst，任务执行阶段打印
+    }
+    
+    doLast {
+        last.call()                // GradleSnippet: doLast，任务执行阶段打印
+    }
+}
+
+task testN {
+
+    3.times {
+        counter ->
+        task "testN_$counter" {
+
+            println "$name: load"  // testN_0: load，配置阶段打印
+
+            doFirst {
+               first.call()        // GradleSnippet: doFirst，任务执行阶段打印
+            }
+
+            doLast {
+               last.call()         // GradleSnippet: doLast，任务执行阶段打印
+            }
+        }
+    }
+}
+
