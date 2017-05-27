@@ -1,0 +1,51 @@
+task lesson2_LoadFile {
+
+    println "$name root dir = $rootDir\r\n" // lesson2_LoadFile root dir = E:\groovy\GradleSnippet
+
+    doLast {
+        // test dir: E:\groovy\GradleSnippet\ant_test
+        def dir = file(getRootDir().getPath() + "/ant_test")
+
+        println "test dir: $dir\r\n"
+
+        dir.listFiles().each {
+            file ->
+
+            // file: E:\groovy\GradleSnippet\ant_test\gradle.properties
+            println "file: ${file.getPath()}\r\n"
+
+            // 加载文件内容并用file_content作为key保存在ant属性中
+            ant.loadfile(srcFile: file, property: "file_content")
+            // 计算文件md5并用file_check_sum作为key保存在ant属性中
+            ant.checksum(file: file, property: "file_check_sum")
+
+            println " ************ $file.name start ************\r\n"
+
+            // 从ant属性中获取file_content和file_check_sum
+            println "file content = ${ant.properties["file_content"]}\r\n"
+            println "file check sum = ${ant.properties["file_check_sum"]}\r\n"
+
+            println " ************* $file.name end *************\r\n"
+        }
+    }
+}
+
+task lesson2_checkSum {
+
+    doLast {
+        def f = file(getRootDir().getPath() + "/lesson1.gradle")
+
+        // 直接使用ant作为closure的代理，并立即执行closure。
+        // 所以在closure内部可以直接使用ant的方法和属性，并且在closure之后
+        // 可以直接使用closure内部设置的ant属性
+        ant {
+            println "test file: ${f.getName()}\r\n"
+
+            checksum(property: "check_sum", file: f)
+
+            println "$f.name check sum = " + check_sum
+        }
+
+        println "I just love to print check sums: " + ant["check_sum"]
+    }
+}
