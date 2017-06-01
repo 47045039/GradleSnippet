@@ -1,0 +1,45 @@
+// 演示如何动态设置version，如何获取任务执行的状态
+
+task distribution {
+    doLast {
+        println "We build the zip with version=$version"
+    }
+
+}
+
+// 三种方法设置依赖关系
+task release(dependsOn: "distribution") {    // 设置依赖关系
+//task release(dependsOn: distribution) {    // 设置依赖关系
+    doLast {
+        println 'We release now, version=$version'
+    }
+}
+//release.dependsOn(distribution) // 设置依赖关系
+
+// 任务配置评估完成后，显示所有任务并设置version
+gradle.taskGraph.whenReady { taskGraph ->
+    taskGraph.allTasks.each {
+        task ->
+        println "contains the task: $task.name"
+    }
+
+    // 动态设置version，此处的version是project的一个属性
+    if (taskGraph.hasTask(release)) {
+        version = '1.0'
+    } else {
+        version = '1.0-SNAPSHOT'
+    }
+}
+
+// 任务执行之前打印task name，在任务的doFirst之前执行
+gradle.taskGraph.beforeTask { task ->
+    println "before execute ${task.name}"
+}
+
+// 任务执行之后打印task state，在任务的doLast之后执行
+gradle.taskGraph.afterTask { task, taskState ->
+    println "$task.name state: executed=${taskState.executed}, upToDate=${taskState.upToDate}, " +
+            "didWork=${taskState.didWork}, failure=${taskState.failure}, " +
+            "skipped=${taskState.skipped}, skipMessage=${taskState.skipMessage}"
+}
+
