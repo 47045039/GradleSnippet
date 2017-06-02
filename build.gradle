@@ -3,3 +3,5 @@ apply from: uri("lesson1.gradle")
 apply from: uri("lesson2.gradle")
 
 apply from: uri("lesson3.gradle")
+
+apply from: uri("lesson4.gradle")
